@@ -41,7 +41,7 @@ class StockAnalysisData:
 
     def __init__(self):
         # 股票代码，默认茅台
-        self.stock_code: str = "sz.000975"   # 注意：需要加上交易所
+        self.stock_code: str = "603799"
         # 至少为30
         self.period = 120
         self.kline_data: pd.DataFrame = None
@@ -65,7 +65,7 @@ class StockAnalysisData:
         # # frequency=9 通常代表日线，offset=30 代表获取30根K线
         # bars = client.bars(symbol=self.stock_code, frequency=9, offset=self.period, adjust='qfq')
         # df = pd.DataFrame(bars)
-        quotes = client.quotes(symbol=re.sub(r'\D', '', self.stock_code) )
+        quotes = client.quotes(symbol=self.stock_code)
         self.current_price = quotes['price'].values
 
         # 历史k线数据获取
@@ -73,7 +73,7 @@ class StockAnalysisData:
         start_date = (datetime.now() - timedelta(days=self.period)).strftime('%Y-%m-%d')
         bs.login()
         rs = bs.query_history_k_data_plus(
-            self.stock_code,
+            self.add_exchange_prefix(self.stock_code),
             "date,open,high,low,close,volume",
             start_date=start_date,
             end_date=end_date,
@@ -250,6 +250,17 @@ class StockAnalysisData:
         self.current_price_evaluate(csv_path)
         self.trend_evaluate(csv_path)
         logging.info(f"💾 策略指引已成功保存至: {csv_path}")
+
+    def add_exchange_prefix(self, code):
+        if code.startswith('6'):  # 沪市主板(60) + 科创板(688)
+            return f"sh.{code}"
+        elif code.startswith(('00', '3')):  # 深市主板(000/002) + 创业板(300)
+            return f"sz.{code}"
+        elif code.startswith('92'):  # 北交所(920)
+            return f"bj.{code}"
+        else:
+            return code  # 无法识别的代码直接返回原值
+
 
 def main():
     logging.basicConfig(level=logging.INFO)

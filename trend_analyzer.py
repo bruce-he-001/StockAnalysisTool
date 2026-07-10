@@ -141,10 +141,15 @@ class TrendAnalyzer():
             return result
 
         # 计算风险报偿比
-        result['take_profit_point'] = KeyPointsAnalyzer(self.kline_data).find_closest_pressure_and_support(supports, resistances, gap_zone, result['buying_point'], result['reversal_date'])[1][0]
+        support_closest, resistance_closest = KeyPointsAnalyzer(self.kline_data).find_closest_pressure_and_support(supports, resistances, gap_zone, result['buying_point'], result['reversal_date'])
+        if len(resistance_closest) == 0:
+            # 行情创新高，没有压力位
+            result['take_profit_point'] = float('inf')
+            result['risk_reward_ratio'] = 10.0
+
+        result['take_profit_point'] = resistance_closest[0]
         risk = abs(result['buying_point'] - result['stop_loss_point'])  # 使用 abs 防止负数
         reward = abs(result['take_profit_point'] - result['buying_point'])
-
         if risk == 0:
             result['risk_reward_ratio'] = 10.0  # 或者 float('inf')，根据你的业务需求
         else:

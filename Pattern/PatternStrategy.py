@@ -44,4 +44,4 @@ class PatternStrategy(ABC):
             if row['low'] <= zone_upper and zone_lower <= row['high']:
                 return 1, f"，触及了关键区间 {gap['gap_bottom']} - {gap['gap_top']}"
 
-        return 0, None
+        return 0, ""

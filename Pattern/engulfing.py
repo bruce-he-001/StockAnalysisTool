@@ -32,10 +32,9 @@ class EngulfingStrategy(PatternStrategy):
             # 条件2：当前是阳线 (收盘价 > 开盘价)
             # 条件3：当前实体完全覆盖前一根实体 (当前开盘 <= 前收盘 且 当前收盘 >= 前开盘)
             is_bullish_engulfing = (
-                    prev_open > prev_close and
+                    curr_open <= prev_close < prev_open <= curr_close and
                     curr_close > curr_open and
-                    curr_open <= prev_close and
-                    curr_close >= prev_open
+                    (curr_close - curr_open) / curr_open > 0.03  # 条件4：当前阳线实体涨幅大于3%
             )
 
             # 是否为看跌吞没形态
@@ -43,10 +42,9 @@ class EngulfingStrategy(PatternStrategy):
             # 条件2：当前是阴线 (开盘价 > 收盘价)
             # 条件3：当前实体完全覆盖前一根实体 (当前开盘 >= 前收盘 且 当前收盘 <= 前开盘)
             is_bearish_engulfing = (
-                    prev_close > prev_open and
+                    curr_open >= prev_close > prev_open >= curr_close and
                     curr_open > curr_close and
-                    curr_open >= prev_close and
-                    curr_close <= prev_open
+                    (curr_close - curr_open) / curr_open > 0.03  # 条件4：当前阳线实体涨幅大于3%
             )
 
             # 计算信号强度

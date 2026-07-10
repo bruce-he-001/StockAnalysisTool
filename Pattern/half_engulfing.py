@@ -29,12 +29,14 @@ class HalfEngulfingStrategy(PatternStrategy):
 
         # 2. 第二根K线是阴线且深入第一根K线实体（超过50%）
         is_k2_yin = k2['close'] < k2['open']
-        # 3b. 计算第一根阳线的实体中点
+        # 计算第一根阳线的实体中点
         k1_mid_point = (k1['open'] + k1['close']) / 2.0
-        # 3c. 第三根K线的收盘价必须小于该中点（即向下深入实体50%以上）
+        # 第三根K线的收盘价必须小于该中点（即向下深入实体50%以上）
         is_k2_penetrate = k2['close'] < k1_mid_point
+        # 第二根的开盘价必须小于第一根的收盘价
+        is_k2_open_valid = k2['open'] > k1['close']
 
-        return is_k1_big_rise and is_k2_yin and is_k2_penetrate
+        return is_k1_big_rise and is_k2_yin and is_k2_penetrate and is_k2_open_valid
 
     def is_pierce(self, kline_data, i):
         k1, k2 = kline_data.iloc[i - 1], kline_data.iloc[i]
@@ -49,14 +51,16 @@ class HalfEngulfingStrategy(PatternStrategy):
         # 判断条件：必须是阴线，且实体长度大于10日均值的1.5倍
         is_k1_big_drop = (k1['close'] < k1['open']) and (k1_body > avg_body_10 * 1.5 or (k1['open'] - k1['close']) / k1['open'] >= 0.03)
 
-        # 2. 第二根K线是阳线且深入第一根K线实体（超过50%）
+        # 2. 第二根K线是阳线且深入第一根K线实体（超过50%）且开盘价大于第一根K线
         is_k2_yang = k2['close'] > k2['open']
-        # 3b. 计算第一根阴线的实体中点
+        # 计算第一根阴线的实体中点
         k1_mid_point = (k1['open'] + k1['close']) / 2.0
-        # 3c. 第二根K线的收盘价必须大于该中点（即深入实体50%以上）
+        # 第二根K线的收盘价必须大于该中点（即深入实体50%以上）
         is_k2_penetrate = k2['close'] > k1_mid_point
+        # 第二根的开盘价必须大于第一根的收盘价
+        is_k2_open_valid = k2['open'] < k1['close']
 
-        return is_k1_big_drop and is_k2_yang and is_k2_penetrate
+        return is_k1_big_drop and is_k2_yang and is_k2_penetrate and is_k2_open_valid
 
     def detect(self, kline_data, supports, resistances, gap_zone, pattern_result):
         logging.info("开始进行刺透、乌云盖顶形态检测")

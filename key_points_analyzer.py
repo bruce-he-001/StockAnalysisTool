@@ -24,7 +24,7 @@ class KeyPointsAnalyzer():
         """
         self.kline_data = kline_data
         # 应该区分，科技股为12%，老登股为6%(经常出现8%、9%的变化的用12%）
-        self.threshold = 0.06
+        self.threshold = 0.12
 
     def previous_high_low_analysis(self):
         """
@@ -47,7 +47,6 @@ class KeyPointsAnalyzer():
         last_pivot_high_idx = 0
         last_pivot_low_idx = 0
 
-        # 初始状态：0-未定，1-上升趋势，-1-下降趋势
         trend = key_word_code.UNKNOWN_TREND
 
         for i in range(1, n):
@@ -60,7 +59,7 @@ class KeyPointsAnalyzer():
                 if current_high > last_pivot_high:
                     last_pivot_high = current_high
                     last_pivot_high_idx = i
-                if last_pivot_low < current_low:
+                if current_low < last_pivot_low:
                     last_pivot_low = current_low
                     last_pivot_low_idx = i
                 # 如果当前最高价比上一个高点涨了 12%，确立为上升趋势
@@ -86,7 +85,7 @@ class KeyPointsAnalyzer():
                         'drop': f"{(last_pivot_high - current_low) / last_pivot_high:.2%}"
                     })
                     # 切换趋势为下降，重置最低点
-                    trend = -1
+                    trend = key_word_code.DOWNWARD_TREND
                     last_pivot_low = current_low
                     last_pivot_low_idx = i
 
@@ -105,12 +104,9 @@ class KeyPointsAnalyzer():
                         'bounce': f"{(current_high - last_pivot_low) / last_pivot_low:.2%}"
                     })
                     # 切换趋势为上升，重置最高点
-                    trend = 1
+                    trend = key_word_code.UPWARD_TREND
                     last_pivot_high = current_high
                     last_pivot_high_idx = i
-        if trend == 0:
-            # 震荡行情，没有趋势和关键点
-            return [], []
 
         if not support_levels and not resistance_levels:
             # 说明此时市场为单边行情，没有反转，没有支撑点和压力位
